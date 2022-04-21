@@ -5,7 +5,7 @@
 * [Features](#features)
 * [Usage](#usage)
 * [Installation](#installation)
-* [Technologies and tools](#technnologies-and-tools)
+* [Technologies and tools](#technologies-and-tools)
 * [Screenshots](#screenshots)
 
 
