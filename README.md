@@ -16,7 +16,7 @@ Contacts is a simple Command Line tool that provides an easy way to store and ma
 ## Features
 
 - Add contacts to the database
-- Search for contacts by name, number and email adress
+- Search for contacts by name, number and email address
 - Edit existing contact's fields
 - List all contacts sorted alphabetically
 - Import contacts from .vcf files
@@ -51,7 +51,7 @@ To import contacts from vCard (.vcf file) type: `import FILE_NAME`
 2. Open this folder and install with `mvn clean install`
 3. In `target` folder there will be executable jar file `contacts.jar` which you can move freely and run with `java -jar contacts.jar`
 
-This program also creates .contacts folder inside home directory to store contacts.
+The first time you run this program, it creates .contacts folder (containing database file) inside your home directory.
 
 ## Technologies and tools
 
