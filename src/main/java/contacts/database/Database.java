@@ -1,5 +1,6 @@
 package contacts.database;
 
+import contacts.database.entity.Contact;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.EntityTransaction;
@@ -79,10 +80,14 @@ public class Database {
             CriteriaBuilder builder = entityManager.getCriteriaBuilder();
             CriteriaQuery<Contact> criteria = builder.createQuery(Contact.class);
             Root<Contact> root = criteria.from(Contact.class);
+            root.join("numbers", JoinType.LEFT);
+            root.join("emails", JoinType.LEFT);
+            root.join("address", JoinType.LEFT);
             criteria.select(root);
             criteria.orderBy(builder.asc(root.get("name")));
             return entityManager.createQuery(criteria).getResultList();
         } catch (Exception exception) {
+            exception.printStackTrace();
             throw new DatabaseOperationException("Could not load contacts from the database");
         } finally {
             entityManager.close();
@@ -95,6 +100,9 @@ public class Database {
             CriteriaBuilder builder = entityManager.getCriteriaBuilder();
             CriteriaQuery<Contact> criteria = builder.createQuery(Contact.class);
             Root<Contact> root = criteria.from(Contact.class);
+            root.join("numbers", JoinType.LEFT);
+            root.join("emails", JoinType.LEFT);
+            root.join("address", JoinType.LEFT);
             Predicate predicate = builder.equal(root.get("name"), name);
             criteria.select(root).where(predicate);
             return entityManager.createQuery(criteria).getSingleResult();
@@ -111,12 +119,12 @@ public class Database {
             CriteriaBuilder builder = entityManager.getCriteriaBuilder();
             CriteriaQuery<Contact> criteria = builder.createQuery(Contact.class);
             Root<Contact> root = criteria.from(Contact.class);
-
+            Join<Object, Object> numbers = root.join("numbers", JoinType.LEFT);
+            Join<Object, Object> emails = root.join("emails", JoinType.LEFT);
             String criteriaPattern = ("%" + pattern + "%").toUpperCase();
             Predicate namePredicate = builder.like(builder.upper(root.get("name")), criteriaPattern);
-            Predicate numberPredicate = builder.like(root.get("number"), criteriaPattern);
-            Predicate emailPredicate = builder.like(builder.upper(root.get("email")), criteriaPattern);
-
+            Predicate numberPredicate = builder.like(numbers.get("number"), criteriaPattern);
+            Predicate emailPredicate = builder.like(builder.upper(emails.get("email")), criteriaPattern);
             criteria.select(root).where(builder.or(namePredicate, numberPredicate, emailPredicate));
             return entityManager.createQuery(criteria).getResultList();
         } catch (Exception exception) {

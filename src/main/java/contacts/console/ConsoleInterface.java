@@ -1,8 +1,11 @@
 package contacts.console;
 
-import contacts.database.Contact;
+import contacts.database.entity.Address;
+import contacts.database.entity.Contact;
 import contacts.database.Database;
 import contacts.database.DatabaseOperationException;
+import contacts.database.entity.Email;
+import contacts.database.entity.PhoneNumber;
 import contacts.utils.FileOperationException;
 import contacts.utils.FileUtils;
 import java.util.List;
@@ -14,9 +17,9 @@ public class ConsoleInterface {
     public void open() {
         while (true) {
             try {
-                String inputLine = ConsoleInput.getInstructions();
+                String inputLine = ConsoleInput.getLine();
                 switch (InputRecognizer.recognize(inputLine)) {
-                    case ADD -> addContact();
+                    case ADD_CONTACT -> addContact();
                     case GET_ALL -> getAll();
                     case ACCESS -> access(inputLine);
                     case SEARCH -> searchByPattern(inputLine);
@@ -36,10 +39,25 @@ public class ConsoleInterface {
 
     private void addContact() throws DatabaseOperationException {
         Contact newContact = new Contact();
+
         newContact.setName(ConsoleInput.getName());
-        newContact.setNumber(ConsoleInput.getNumber());
-        newContact.setEmail(ConsoleInput.getEmail());
-        newContact.setAddress(ConsoleInput.getAddress());
+
+        PhoneNumber number = new PhoneNumber();
+        number.setNumber(ConsoleInput.getNumber());
+        number.setType(ConsoleInput.getType());
+        newContact.addNumber(number);
+
+        Email email = new Email();
+        email.setEmail(ConsoleInput.getEmail());
+        newContact.addEmail(email);
+
+        Address address = new Address();
+        address.setStreet(ConsoleInput.getStreet());
+        address.setCity(ConsoleInput.getCity());
+        address.setCountry(ConsoleInput.getCountry());
+        address.setPostalCode(ConsoleInput.getPostalCode());
+        newContact.setAddress(address);
+
         newContact.setBirthDate(ConsoleInput.getBirthDate());
         newContact.setNote(ConsoleInput.getNote());
         DATABASE.saveContact(newContact);
@@ -61,35 +79,214 @@ public class ConsoleInterface {
         System.out.println(contact);
         while (true) {
             System.out.print("[contact]");
-            String inputLine = ConsoleInput.getInstructions();
+            String inputLine = ConsoleInput.getLine().toLowerCase();
             switch (InputRecognizer.recognize(inputLine)) {
-                case EDIT_FIELD :
-                    String fieldToChange = inputLine.substring(4).toLowerCase().trim();
-                    switch (fieldToChange) {
-                        case "name" -> contact.setName(ConsoleInput.getName());
-                        case "number" -> contact.setNumber(ConsoleInput.getNumber());
-                        case "email" -> contact.setEmail(ConsoleInput.getEmail());
-                        case "address" -> contact.setAddress(ConsoleInput.getAddress());
+                case ADD_CONTACT_ITEM:
+                    String itemName = inputLine.split("\\s+")[1];
+                    switch (itemName) {
+                        case "number" -> addNumber(contact);
+                        case "email" -> addEmail(contact);
+                        default -> System.out.println("Incorrect item");
+                    }
+                    DATABASE.updateContact(contact);
+                    System.out.println(contact);
+                    break;
+                case EDIT_FIELD:
+                    String fieldToEdit = inputLine.split("\\s+")[1];
+                    switch (fieldToEdit) {
+                        case "name" -> editName(contact);
+                        case "number" -> editNumber(contact, inputLine);
+                        case "email" -> editEmail(contact, inputLine);
+                        case "address" -> editAddress(contact, inputLine);
                         case "birth date" -> contact.setBirthDate(ConsoleInput.getBirthDate());
                         case "note" -> contact.setNote(ConsoleInput.getNote());
                     }
                     DATABASE.updateContact(contact);
                     System.out.println(contact);
                     break;
-                case DELETE:
-                    DATABASE.deleteContact(contact);
+                case DELETE_CONTACT:
+                    boolean delete = ConsoleInput.getDeletionConfirmation();
+                    if (delete) {
+                        DATABASE.deleteContact(contact);
+                        System.out.println("Contact deleted");
+                        return;
+                    }
+                    break;
+                case DELETE_FIELD:
+                    deleteField(contact, inputLine);
+                    DATABASE.updateContact(contact);
+                    System.out.println(contact);
+                    break;
                 case RETURN:
                     return;
                 default:
                     System.out.println("""
                             Incorrect input.
                             You can use following commands:
-                            edit FIELD_NAME
-                            delete
+                            edit CONTACT_FIELD ITEM_NUMBER ITEM_FIELD
+                            edit CONTACT_FIELD ITEM_FIELD
+                            add number
+                            add email
+                            delete CONTACT_FIELD ITEM_NUMBER
+                            delete CONTACT_FIELD
                             return
-                            
+                                               
                             """);
             }
+        }
+    }
+
+    private void addNumber(Contact contact) {
+        PhoneNumber number = new PhoneNumber();
+        number.setNumber(ConsoleInput.getNumber());
+        number.setType(ConsoleInput.getType());
+        contact.addNumber(number);
+    }
+
+    private void addEmail(Contact contact) {
+        Email email = new Email();
+        email.setEmail(ConsoleInput.getEmail());
+        contact.addEmail(email);
+    }
+
+    private void editName(Contact contact) {
+        contact.setName(ConsoleInput.getName());
+    }
+
+    private void editNumber(Contact contact, String userInput) {
+        String[] instructions = userInput.split("\\s+");
+        if (contact.getNumbers().size() == 1) {
+            if (instructions.length != 3) {
+                System.out.println("Incorrect instructions");
+                return;
+            }
+            PhoneNumber number = contact.getNumbers().get(0);
+            String field = instructions[2];
+            if (field.equals("number")) {
+                number.setNumber(ConsoleInput.getNumber());
+            } else if (field.equals("type")) {
+                number.setType(ConsoleInput.getType());
+            } else {
+                System.out.println("Incorrect field");
+            }
+        } else {
+            if (instructions.length != 4) {
+                System.out.println("Incorrect instructions");
+                return;
+            }
+            if (!instructions[2].matches("\\d+")) {
+                System.out.println("Incorrect instructions");
+                return;
+            }
+            List<PhoneNumber> numbers = contact.getNumbers();
+            int numberIndex = Integer.parseInt(instructions[2]);
+            if (numberIndex < 1 || numberIndex > numbers.size()) {
+                System.out.println("Incorrect instructions");
+                return;
+            }
+            PhoneNumber number = numbers.get(numberIndex - 1);
+            String field = instructions[3];
+            if (field.equals("number")) {
+                number.setNumber(ConsoleInput.getNumber());
+            } else if (field.equals("type")) {
+                number.setType(ConsoleInput.getType());
+            } else {
+                System.out.println("Incorrect field");
+            }
+        }
+    }
+
+    private void editEmail(Contact contact, String userInput) {
+        String[] instructions = userInput.split("\\s+");
+        if (contact.getEmails().size() == 1) {
+            if (instructions.length != 2) {
+                System.out.println("Incorrect instructions");
+                return;
+            }
+            Email email = contact.getEmails().get(0);
+            email.setEmail(ConsoleInput.getEmail());
+        } else {
+            if (instructions.length != 3) {
+                System.out.println("Incorrect instructions");
+                return;
+            }
+            if (!instructions[2].matches("\\d+")) {
+                System.out.println("Incorrect instructions");
+                return;
+            }
+            List<Email> emails = contact.getEmails();
+            int numberIndex = Integer.parseInt(instructions[2]);
+            if (numberIndex < 1 || numberIndex > emails.size()) {
+                System.out.println("Incorrect instructions");
+                return;
+            }
+            Email email = emails.get(numberIndex - 1);
+            email.setEmail(ConsoleInput.getEmail());
+        }
+    }
+
+    private void editAddress(Contact contact, String userInput) {
+        String[] instructions = userInput.split("\\s+");
+        if (instructions.length != 3) {
+            System.out.println("Incorrect instructions");
+            return;
+        }
+        Address address = contact.getAddress();
+        String field = instructions[2].toLowerCase();
+        switch (field) {
+            case "street" -> address.setStreet(ConsoleInput.getStreet());
+            case "city" -> address.setCity(ConsoleInput.getCity());
+            case "country" -> address.setCountry(ConsoleInput.getCountry());
+            case "postal-code" -> address.setPostalCode(ConsoleInput.getPostalCode());
+            default -> System.out.println("Incorrect field");
+        }
+    }
+
+    private void deleteField(Contact contact, String userInput) {
+        String[] instructions = userInput.split("\\s+");
+        String fieldName = instructions[1];
+        switch (fieldName) {
+            case "number" -> {
+                List<PhoneNumber> numbers = contact.getNumbers();
+                if (numbers.size() == 1) {
+                    contact.removeNumber(numbers.get(0));
+                } else if (numbers.size() > 1) {
+                    if (instructions.length != 3) {
+                        System.out.println("Incorrect instructions");
+                        return;
+                    }
+                    int numberIndex = Integer.parseInt(instructions[2]);
+                    if (numberIndex > 0 && numberIndex <= numbers.size()) {
+                        PhoneNumber number = numbers.get(numberIndex);
+                        contact.removeNumber(number);
+                    } else {
+                        System.out.println("Incorrect element index");
+                    }
+                }
+            }
+            case "email" -> {
+                List<Email> emails = contact.getEmails();
+                if (emails.size() == 1) {
+                    contact.removeEmail(emails.get(0));
+                } else if (emails.size() > 1) {
+                    if (instructions.length != 3) {
+                        System.out.println("Incorrect instructions");
+                        return;
+                    }
+                    int emailIndex = Integer.parseInt(instructions[2]);
+                    if (emailIndex > 0 && emailIndex <= emails.size()) {
+                        Email number = emails.get(emailIndex);
+                        contact.removeEmail(number);
+                    } else {
+                        System.out.println("Incorrect element index");
+                    }
+                }
+            }
+            case "address" -> contact.setAddress(null);
+            case "organisation" -> contact.setOrganisation("");
+            case "birth-date" -> contact.setBirthDate(null);
+            case "note" -> contact.setNote("");
+            default -> System.out.println("Incorrect instructions");
         }
     }
 
@@ -105,7 +302,7 @@ public class ConsoleInterface {
 
     private void importFromFile(String inputLine) throws FileOperationException {
         String fileName = inputLine.substring(6).trim();
-        List<Contact> importedContacts = FileUtils.loadContactsFromVcard(fileName);
+        List<Contact> importedContacts = FileUtils.importContactsFromVcard(fileName);
         for (Contact contact : importedContacts) {
             try {
                 DATABASE.saveContact(contact);
@@ -119,8 +316,10 @@ public class ConsoleInterface {
     private void printContactList(List<Contact> contactList) {
         for (int i = 0; i < contactList.size(); i++) {
             Contact contact = contactList.get(i);
-            System.out.printf("%n%d. %s [%s]", i + 1, contact.getName(), contact.getNumber());
-
+            System.out.printf("%n%d. %s (%s)",
+                    i + 1,
+                    contact.getName(),
+                    contact.getNumbers().size() > 0 ? contact.getNumbers().get(0) : "no number");
         }
         System.out.println("\n");
     }
@@ -129,21 +328,21 @@ public class ConsoleInterface {
         System.out.println("""
                 Adding contact
                 To add contact type: add
-                Then you will be asked for contact's field values. Setting name and number field is mandatory.
+                Then you will be asked for contact's field values. Setting name is mandatory.
                 To skip entering other information press Enter.
 
                 Getting all contacts list
                 To get all contacts list(name and number) type: get all
-                
+                                
                 Searching for contacts
                 To search for contact type: search PATTERN
                 As PATTERN you can use either name, number or email's fragment.
-                
+                                
                 Accessing contact
                 To access specific contact type: access CONTACT_NAME
-                After that you will be able to edit contact trough: edit FIELD_NAME, or delete it with: delete
+                After that you will be able to edit contact with: edit command, or delete it with: delete
                 To return from contact's view type: return
-                
+                                
                 Importing contacts
                 To import contacts from vCard (.vcf file) type: import FILE_NAME
 

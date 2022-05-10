@@ -6,7 +6,8 @@
 
     <groupId>org</groupId>
     <artifactId>contacts</artifactId>
-    <version>1.0</version>
+    <version>1.0-SNAPSHOT</version>
+	<name>Contacts</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

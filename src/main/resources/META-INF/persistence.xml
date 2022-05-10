@@ -5,7 +5,10 @@
              version="3.0">
     <persistence-unit name="contacts-persistence-unit">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-        <class>contacts.database.Contact</class>
+        <class>contacts.database.entity.Contact</class>
+        <class>contacts.database.entity.Address</class>
+        <class>contacts.database.entity.Email</class>
+        <class>contacts.database.entity.PhoneNumber</class>
         <properties>
             <property name="jakarta.persistence.jdbc.driver" value="org.h2.Driver"/>
             <property name="jakarta.persistence.jdbc.url" value="jdbc:h2:file:${user.home}\.contacts\database"/>

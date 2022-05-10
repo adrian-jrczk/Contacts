@@ -5,11 +5,13 @@ import java.util.Arrays;
 enum InputRecognizer {
 
     EMPTY("^$"),
-    ADD("(?i)add"),
+    ADD_CONTACT("(?i)add"),
+    ADD_CONTACT_ITEM("(?i)add\\s+\\w+"),
     GET_ALL("(?i)get\\s+all"),
-    DELETE("(?i)delete"),
+    DELETE_CONTACT("(?i)delete"),
+    DELETE_FIELD("(?i)delete\\s+\\w+.*"),
     ACCESS("(?i)access\\s+[a-zA-Z]+.*"),
-    EDIT_FIELD("(?i)edit\\s+(name|number|email|address|(birth date)|note)"),
+    EDIT_FIELD("(?i)edit\\s+\\w+.*"),
     SEARCH("(?i)search\\s+[a-zA-Z0-9]+.*"),
     IMPORT("(?i)import\\s+[a-zA-Z]+.*"),
     HELP("(?i)help"),

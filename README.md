@@ -1,12 +1,6 @@
 # Contacts
 
-## Table of contents
-* [About](#about)
-* [Features](#features)
-* [Usage](#usage)
-* [Installation](#installation)
-* [Technologies and tools](#technologies-and-tools)
-* [Screenshots](#screenshots)
+![screenshot 1](images/screenshot01.png?raw=true "Usage example 1")
 
 
 ## About
@@ -27,11 +21,25 @@ To use this program open it with console and type instructions.
 
 ### Adding contact
 To add contact type: `add`<br/>
-Then you will be asked for contact's field values. Setting name and number field is mandatory.
+Then you will be asked for contact's field values. Setting name field is mandatory.
 To skip entering other information press Enter.
 
 ### Getting all contacts list
-To get all contacts list(name and number) type: `get all`
+To get all contacts list type: `get all`
+
+### Accessing and editing contact
+To access contact type `access CONTACT_NAME`<br/>
+After accessing contact you will see all of its fields.
+From access view you can also delete contact, edit its fields, add new numbers and emails.<br/>
+To edit, use `edit CONTACT_FIELD ITEM_NUMBER ITEM_FIELD` command.<br/>
+To add number or email type `add FIELD_NAME`<br/>
+To delete contact type `delete`<br/>
+Commands examples:
+- `edit number 1 type`
+- `edit number number`
+- `add email`
+- `edit address street`
+
 
 ### Searching for contacts
 To search for contact type: `search PATTERN`<br/>
@@ -55,19 +63,17 @@ The first time you run this program, it creates .contacts folder (containing dat
 
 ## Technologies and tools
 
-- Java 17.0.2
-- Maven 3.8.4
-- Hibernate 6.0.0
-- H2 database 2.1.212
-- Log4j 2.17.2
-- Lombok 1.18.24
-- Libphonenumber 8.12.46
-- Ez-vCard 0.11.3
+- Java
+- Maven
+- Hibernate
+- H2 database
+- Log4j
+- Lombok
+- Libphonenumber
+- Ez-vCard
 
 ## Screenshots
 
-![screenshot 1](images/screenshot01.png?raw=true "Adding contacts")
+![screenshot 2](images/screenshot02.png?raw=true "Usage example 2")
 ***
-![screenshot 2](images/screenshot02.png?raw=true "Importing and editing contacts")
-***
-![screenshot 3](images/screenshot03.png?raw=true "Searching for contacts")
+![screenshot 3](images/screenshot03.png?raw=true "Usage example 3")
